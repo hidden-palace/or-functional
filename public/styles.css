@@ -5,18 +5,19 @@
 }
 
 :root {
-    --primary-color: #6B8E23; /* Plant foliage / navigation accents */
-    --secondary-color: #DA70D6; /* Accent titles / highlight tags */
-    --accent-color: #F4D7DA; /* Background walls / light overlays */
-    --success-color: #10b981;
-    --warning-color: #f59e0b;
-    --error-color: #ef4444;
+    --primary-color: #D97D9D; /* Soft pinkish tone for flower accents */
+    --secondary-color: #DA70D6; /* Accent titles / highlight tags (light purple) */
+    --accent-color: #F4D7DA; /* Background walls / light overlays (light pink) */
+    --success-color: #10b981; /* Success green */
+    --warning-color: #f59e0b; /* Yellow for warnings */
+    --error-color: #ef4444; /* Red for errors */
     --background-color: #ffffff; /* Core backgrounds */
     --surface-color: #ffffff; /* Core backgrounds */
-    --text-primary: #333333; /* Body text */
-    --text-secondary: #64748b;
-    --border-color: #e2e8f0;
+    --text-primary: #333333; /* Body text (dark for readability) */
+    --text-secondary: #6B4F4F; /* Subtle muted brown for secondary text */
+    --border-color: #e2e8f0; /* Light gray for borders */
 }
+
 
   .header-actions {
     display: flex;

@@ -5,17 +5,19 @@
 }
 
 :root {
-    --primary-color: #3b82f6;
-    --secondary-color: #64748b;
-    --accent-color: #f97316;
+    --primary-color: #6B8E23; /* Plant foliage / navigation accents */
+    --secondary-color: #DA70D6; /* Accent titles / highlight tags */
+    --accent-color: #F4D7DA; /* Background walls / light overlays */
     --success-color: #10b981;
     --warning-color: #f59e0b;
     --error-color: #ef4444;
-    --background-color: #f8fafc;
-    --surface-color: #ffffff;
-    --text-primary: #1e293b;
+    --background-color: #ffffff; /* Core backgrounds */
+    --surface-color: #ffffff; /* Core backgrounds */
+    --text-primary: #333333; /* Body text */
     --text-secondary: #64748b;
     --border-color: #e2e8f0;
+}
+
   .header-actions {
     display: flex;
     gap: 12px;

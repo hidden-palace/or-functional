@@ -51,6 +51,29 @@ const employees = {
 // DOM elements
 let chatMessages, messageInput, sendButton, charCount;
 
+// Global clearFilters function for HTML onclick handler
+function clearFilters() {
+    console.log('🧹 Clearing all filters...');
+    
+    // Reset all filter inputs to their default values
+    const sourcePlatformSelect = document.getElementById('sourcePlatformFilter');
+    const cityInput = document.getElementById('cityFilter');
+    const minScoreInput = document.getElementById('minScoreFilter');
+    const dateFromInput = document.getElementById('dateFromFilter');
+    const dateToInput = document.getElementById('dateToFilter');
+    
+    if (sourcePlatformSelect) sourcePlatformSelect.value = '';
+    if (cityInput) cityInput.value = '';
+    if (minScoreInput) minScoreInput.value = '';
+    if (dateFromInput) dateFromInput.value = '';
+    if (dateToInput) dateToInput.value = '';
+    
+    console.log('✅ Filters cleared, reloading leads...');
+    
+    // Reload leads without any filters
+    loadLeads();
+}
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
   initializeElements();

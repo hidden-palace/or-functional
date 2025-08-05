@@ -74,6 +74,81 @@ function clearFilters() {
     loadLeads();
 }
 
+// Function to apply filters and reload leads
+function applyFilters() {
+    console.log('Applying filters');
+    loadLeads();
+}
+
+// Function to load leads based on current filter values
+async function loadLeads() {
+    try {
+        // Get filter values
+        const sourcePlatform = document.getElementById('source-platform').value;
+        const city = document.getElementById('city-filter').value;
+        const minScore = document.getElementById('min-score').value;
+        const dateFrom = document.getElementById('date-from').value;
+        const dateTo = document.getElementById('date-to').value;
+        
+        // Build query parameters
+        const params = new URLSearchParams();
+        if (sourcePlatform) params.append('source_platform', sourcePlatform);
+        if (city) params.append('city', city);
+        if (minScore) params.append('min_score', minScore);
+        if (dateFrom) params.append('date_from', dateFrom);
+        if (dateTo) params.append('date_to', dateTo);
+        
+        // Make API request
+        const response = await fetch(`/api/leads?${params.toString()}`);
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Loaded leads:', data);
+        
+        // Update the leads table with the filtered data
+        displayLeads(data.leads || []);
+        
+    } catch (error) {
+        console.error('Error loading leads:', error);
+        alert('Error loading leads. Please try again.');
+    }
+}
+
+// Function to display leads in the table
+function displayLeads(leads) {
+    const tableBody = document.querySelector('#leads-table tbody');
+    if (!tableBody) {
+        console.error('Leads table body not found');
+        return;
+    }
+    
+    // Clear existing rows
+    tableBody.innerHTML = '';
+    
+    // Add new rows
+    leads.forEach(lead => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${lead.company_name || ''}</td>
+            <td>${lead.contact_name || ''}</td>
+            <td>${lead.email || ''}</td>
+            <td>${lead.phone || ''}</td>
+            <td>${lead.city || ''}</td>
+            <td>${lead.source_platform || ''}</td>
+            <td>${lead.score || ''}</td>
+            <td>${lead.created_at ? new Date(lead.created_at).toLocaleDateString() : ''}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+// Load leads when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    loadLeads();
+});
+
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
   initializeElements();

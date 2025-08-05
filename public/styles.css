@@ -383,15 +383,18 @@
     padding: 24px 40px;
     background: var(--surface-color);
     border-bottom: 1px solid var(--border-color);
-    display: flex;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 20px;
     align-items: end;
+    max-width: 100%;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
+    min-width: 0;
 }
 
 .filter-group label {
@@ -400,6 +403,7 @@
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    margin-bottom: 4px;
 }
 
 .filter-select,
@@ -410,6 +414,81 @@
     font-size: 14px;
     background: var(--surface-color);
     color: var(--text-primary);
+    transition: border-color 0.2s ease;
+    min-width: 0;
+}
+
+.filter-select:focus,
+.filter-input:focus {
+    outline: none;
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(217, 125, 157, 0.1);
+}
+
+.filter-input::placeholder {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.filter-actions {
+    display: flex;
+    gap: 12px;
+    grid-column: 1 / -1;
+    justify-content: flex-end;
+    margin-top: 8px;
+}
+
+.filter-btn {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.filter-btn.primary {
+    background: var(--primary-color);
+    color: white;
+}
+
+.filter-btn.primary:hover {
+    background: #c1658a;
+    transform: translateY(-1px);
+}
+
+.filter-btn.secondary {
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    border: 1px solid var(--border-color);
+}
+
+.filter-btn.secondary:hover {
+    background: #f8fafc;
+    border-color: #cbd5e1;
+}
+
+.date-range-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    grid-column: span 2;
+}
+
+.date-range-inputs {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+}
+
+.date-separator {
+    color: var(--text-secondary);
+    font-weight: 500;
+    padding: 0 4px;
 }
 
 .leads-table-container {

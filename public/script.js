@@ -55,18 +55,18 @@ let chatMessages, messageInput, sendButton, charCount;
 function clearFilters() {
     console.log('🧹 Clearing all filters...');
     
-    // Reset all filter inputs to their default values
-    const sourcePlatformSelect = document.getElementById('sourcePlatformFilter');
-    const cityInput = document.getElementById('cityFilter');
-    const minScoreInput = document.getElementById('minScoreFilter');
-    const dateFromInput = document.getElementById('dateFromFilter');
-    const dateToInput = document.getElementById('dateToFilter');
+    // Reset all filter inputs with null checks
+    const sourcePlatformFilter = document.getElementById('source-platform-filter');
+    const cityFilter = document.getElementById('city-filter');
+    const minScoreFilter = document.getElementById('min-score-filter');
+    const dateFromFilter = document.getElementById('date-from-filter');
+    const dateToFilter = document.getElementById('date-to-filter');
     
-    if (sourcePlatformSelect) sourcePlatformSelect.value = '';
-    if (cityInput) cityInput.value = '';
-    if (minScoreInput) minScoreInput.value = '';
-    if (dateFromInput) dateFromInput.value = '';
-    if (dateToInput) dateToInput.value = '';
+    if (sourcePlatformFilter) sourcePlatformFilter.value = '';
+    if (cityFilter) cityFilter.value = '';
+    if (minScoreFilter) minScoreFilter.value = '';
+    if (dateFromFilter) dateFromFilter.value = '';
+    if (dateToFilter) dateToFilter.value = '';
     
     console.log('✅ Filters cleared, reloading leads...');
     
@@ -83,12 +83,20 @@ function applyFilters() {
 // Function to load leads based on current filter values
 async function loadLeads() {
     try {
-        // Get filter values
-        const sourcePlatform = document.getElementById('source-platform').value;
-        const city = document.getElementById('city-filter').value;
-        const minScore = document.getElementById('min-score').value;
-        const dateFrom = document.getElementById('date-from').value;
-        const dateTo = document.getElementById('date-to').value;
+        console.log('🔍 Loading leads with current filters...');
+        
+        // Get filter values with null checks
+        const sourcePlatformElement = document.getElementById('source-platform-filter');
+        const cityElement = document.getElementById('city-filter');
+        const minScoreElement = document.getElementById('min-score-filter');
+        const dateFromElement = document.getElementById('date-from-filter');
+        const dateToElement = document.getElementById('date-to-filter');
+        
+        const sourcePlatform = sourcePlatformElement ? sourcePlatformElement.value : '';
+        const city = cityElement ? cityElement.value : '';
+        const minScore = minScoreElement ? minScoreElement.value : '';
+        const dateFrom = dateFromElement ? dateFromElement.value : '';
+        const dateTo = dateToElement ? dateToElement.value : '';
         
         // Build query parameters
         const params = new URLSearchParams();

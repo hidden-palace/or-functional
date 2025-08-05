@@ -197,24 +197,9 @@ class SupabaseService {
         query = query.eq('source_platform', filters.source_platform);
       }
 
-      if (filters.industry && filters.industry !== 'All Industries') {
-        console.log('🔍 SUPABASE DEBUG: Applying industry filter:', filters.industry);
-        query = query.eq('industry', filters.industry);
-      }
-
       if (filters.city) {
         console.log('🔍 SUPABASE DEBUG: Applying city filter:', filters.city);
         query = query.ilike('city', `%${filters.city}%`);
-      }
-
-      if (filters.validated !== undefined) {
-        console.log('🔍 SUPABASE DEBUG: Applying validated filter:', filters.validated);
-        query = query.eq('validated', filters.validated);
-      }
-
-      if (filters.outreach_sent !== undefined) {
-        console.log('🔍 SUPABASE DEBUG: Applying outreach_sent filter:', filters.outreach_sent);
-        query = query.eq('outreach_sent', filters.outreach_sent);
       }
 
       if (filters.employee_id) {
@@ -224,7 +209,7 @@ class SupabaseService {
 
       if (filters.min_score) {
         console.log('🔍 SUPABASE DEBUG: Applying min_score filter:', filters.min_score);
-        query = query.gte('relevance_score', filters.min_score);
+        query = query.gte('score', filters.min_score);
       }
 
       // Date range filtering

@@ -125,15 +125,26 @@ async function loadLeads() {
 }
 
 // Function to display leads in the table
-function displayLeads(leads) {
-    const tableBody = document.querySelector('#leads-table tbody');
-    if (!tableBody) {
-        console.error('Leads table body not found');
+async function displayLeads(leads) {
+    console.log('Attempting to display leads...');
+    let leadsTableBody = document.getElementById('leads-table-body');
+
+    // Add a retry mechanism for robustness
+    if (!leadsTableBody) {
+        console.warn('Leads table body not found on first attempt. Retrying in 100ms...');
+        await new Promise(resolve => setTimeout(resolve, 100)); // Wait a short period
+        leadsTableBody = document.getElementById('leads-table-body'); // Try again
+    }
+
+    if (!leadsTableBody) {
+        console.error('CRITICAL ERROR: Leads table body element with ID "leads-table-body" is still not found after retry. Please ensure it exists in public/index.html and is correctly rendered in the DOM.');
+        return; // Exit the function if the element is truly missing
+    }
+    leadsTableBody.innerHTML = ''; // Clear existing rows
+    if (!leads || leads.length === 0) {
+        leadsTableBody.innerHTML = '<tr><td colspan="10" class="text-center py-4">No leads found. Try adjusting your filters.</td></tr>';
         return;
     }
-    
-    // Clear existing rows
-    tableBody.innerHTML = '';
     
     // Add new rows
     leads.forEach(lead => {
@@ -148,7 +159,7 @@ function displayLeads(leads) {
             <td>${lead.score || ''}</td>
             <td>${lead.created_at ? new Date(lead.created_at).toLocaleDateString() : ''}</td>
         `;
-        tableBody.appendChild(row);
+        leadsTableBody.appendChild(row);
     });
 }
 

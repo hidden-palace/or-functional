@@ -211,6 +211,7 @@ class SupabaseService {
         console.log('🔍 SUPABASE DEBUG: Applying min_score filter:', filters.min_score);
         query = query.gte('score', filters.min_score);
         query = query.gte('average_score', filters.min_score);
+      }
 
       // Date range filtering
       if (filters.date_from) {

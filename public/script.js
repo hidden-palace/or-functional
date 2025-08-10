@@ -70,18 +70,18 @@ function clearFilters() {
     
     console.log('✅ Filters cleared, reloading leads...');
     
-    // Reload leads without any filters
-    loadLeads();
+    // Use unified leads loading function
+    loadLeadsData();
 }
 
 // Function to apply filters and reload leads
 function applyFilters() {
     console.log('Applying filters');
-    loadLeads();
+    loadLeadsData(); // Use unified function instead of loadLeads()
 }
 
-// Function to load leads based on current filter values
-async function loadLeads() {
+// UNIFIED: Single function to load and display leads
+async function loadLeadsData() {
     try {
         console.log('🔍 Loading leads with current filters...');
         
@@ -116,56 +116,134 @@ async function loadLeads() {
         console.log('Loaded leads:', data);
         
         // Update the leads table with the filtered data
-        displayLeads(data.leads || []);
+        displayLeadsTable(data.leads || []);
+        updateLeadsPagination(data);
         
     } catch (error) {
         console.error('Error loading leads:', error);
-        alert('Error loading leads. Please try again.');
+        showNotification('Error loading leads. Please try again.', 'error');
     }
 }
 
-// Function to display leads in the table
-async function displayLeads(leads) {
-    console.log('Attempting to display leads...');
-    let leadsTableBody = document.getElementById('leads-table-body');
-
-    // Add a retry mechanism for robustness
-    if (!leadsTableBody) {
-        console.warn('Leads table body not found on first attempt. Retrying in 100ms...');
-        await new Promise(resolve => setTimeout(resolve, 100)); // Wait a short period
-        leadsTableBody = document.getElementById('leads-table-body'); // Try again
-    }
-
-    if (!leadsTableBody) {
-        console.error('CRITICAL ERROR: Leads table body element with ID "leads-table-body" is still not found after retry. Please ensure it exists in public/index.html and is correctly rendered in the DOM.');
-        return; // Exit the function if the element is truly missing
-    }
-    leadsTableBody.innerHTML = ''; // Clear existing rows
-    if (!leads || leads.length === 0) {
-        leadsTableBody.innerHTML = '<tr><td colspan="10" class="text-center py-4">No leads found. Try adjusting your filters.</td></tr>';
-        return;
+// UNIFIED: Single function to display leads in table with consistent structure
+function displayLeadsTable(leads) {
+  console.log('📋 Displaying leads in table...');
+  
+  const leadsTable = document.querySelector('.leads-table');
+  const downloadBtn = document.getElementById('downloadLeadsBtn');
+  
+  if (!leadsTable) {
+    console.error('❌ CRITICAL ERROR: Leads table element with class "leads-table" not found');
+    return;
+  }
+  
+  // Clear existing table content
+  leadsTable.innerHTML = '';
+  
+  // Create table header
+  const thead = document.createElement('thead');
+  thead.innerHTML = `
+    <tr>
+      <th>Source Platform</th>
+      <th>Business</th>
+      <th>Contact</th>
+      <th>Location</th>
+      <th>Score</th>
+      <th>Status</th>
+    </tr>
+  `;
+  leadsTable.appendChild(thead);
+  
+  // Create table body with the specific ID that other functions expect
+  const tableBody = document.createElement('tbody');
+  tableBody.id = 'leads-table-body'; // CRITICAL: Add the ID that displayLeads() looks for
+  leadsTable.appendChild(tableBody);
+  
+  if (leads.length === 0) {
+    // Hide download button when no leads
+    if (downloadBtn) {
+      downloadBtn.style.display = 'none';
     }
     
-    // Add new rows
-    leads.forEach(lead => {
-        const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${lead.company_name || ''}</td>
-            <td>${lead.contact_name || ''}</td>
-            <td>${lead.email || ''}</td>
-            <td>${lead.phone || ''}</td>
-            <td>${lead.city || ''}</td>
-            <td>${lead.source_platform || ''}</td>
-            <td>${lead.score || ''}</td>
-            <td>${lead.created_at ? new Date(lead.created_at).toLocaleDateString() : ''}</td>
-        `;
-        leadsTableBody.appendChild(row);
-    });
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+            </svg>
+            <div>
+              <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found</h4>
+              <p style="margin: 0; font-size: 14px;">Try adjusting your filters or ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads!</p>
+              <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+    
+    return;
+  }
+  
+  // Show download button when leads exist
+  if (downloadBtn) {
+    downloadBtn.style.display = 'flex';
+  }
+  
+  console.log(`📋 Displaying ${leads.length} leads in table`);
+  
+  leads.forEach(lead => {
+    const row = document.createElement('tr');
+    
+    // Add a subtle animation for new leads
+    const isRecent = new Date(lead.created_at) > new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
+    if (isRecent) {
+      row.style.animation = 'fadeInHighlight 2s ease-out';
+      row.classList.add('new-lead-row');
+    }
+    
+    row.innerHTML = `
+      <td>
+        <div class="source-info">
+          <strong>${lead.source_platform || 'Unknown'}</strong>
+        </div>
+      </td>
+      <td>
+        <div class="business-info">
+          <strong>${lead.business_name}</strong>
+          <small>${lead.industry || 'Unknown Industry'}${isRecent ? ' <span class="new-lead-badge">• NEW</span>' : ''}</small>
+        </div>
+      </td>
+      <td>
+        <div class="contact-info">
+          <strong>${lead.contact_name || 'No contact'}</strong>
+          <small>${lead.email || 'No Email'}</small>
+          <small>${lead.phone || 'No Phone'}</small>
+        </div>
+      </td>
+      <td>
+        <div class="location-info">
+          <strong>${lead.city || 'Unknown'}, ${lead.state || 'Unknown'}</strong>
+          <small>${lead.address || ''}</small>
+        </div>
+      </td>
+      <td>
+        <span class="score ${getScoreClass(lead.score)}">${(lead.score || 0).toFixed(1)}</span>
+      </td>
+      <td>
+        <span class="status ${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
 }
 
 // Load leads when page loads
 document.addEventListener('DOMContentLoaded', function() {
-    loadLeads();
+    loadLeadsData(); // Use unified function
 });
 
 // Initialize the application
@@ -434,7 +512,6 @@ async function handleLogoUpload(event) {
 async function loadCurrentBranding() {
   try {
     console.log('🔍 FRONTEND DEBUG: Loading current branding...');
-    console.log('🔍 FRONTEND DEBUG: Loading current branding...');
     
     const response = await fetch('/api/branding');
     const branding = await response.json();
@@ -553,34 +630,25 @@ function initializeExportDropdown() {
 function getLeadsFilters() {
   const filters = {};
   
-  // Get status filter and map to backend parameters
-  const statusFilter = document.querySelector('.filter-select[data-filter="status"]');
-  if (statusFilter && statusFilter.value && statusFilter.value !== 'All Leads') {
-    switch (statusFilter.value) {
-      case 'New':
-        filters.validated = false;
-        filters.outreach_sent = false;
-        break;
-      case 'Contacted':
-        filters.outreach_sent = true;
-        break;
-      case 'Qualified':
-        filters.validated = true;
-        break;
-    }
-  }
+  // Get filter values with null checks
+  const sourcePlatformElement = document.getElementById('source-platform-filter');
+  const cityElement = document.getElementById('city-filter');
+  const minScoreElement = document.getElementById('min-score-filter');
+  const dateFromElement = document.getElementById('date-from-filter');
+  const dateToElement = document.getElementById('date-to-filter');
   
-  // Get industry filter
-  const industryFilter = document.querySelector('.filter-select[data-filter="industry"]');
-  if (industryFilter && industryFilter.value && industryFilter.value !== 'All Industries') {
-    filters.industry = industryFilter.value;
-  }
+  const sourcePlatform = sourcePlatformElement ? sourcePlatformElement.value : '';
+  const city = cityElement ? cityElement.value : '';
+  const minScore = minScoreElement ? minScoreElement.value : '';
+  const dateFrom = dateFromElement ? dateFromElement.value : '';
+  const dateTo = dateToElement ? dateToElement.value : '';
   
-  // Get location filter
-  const locationFilter = document.querySelector('.filter-input[data-filter="location"]');
-  if (locationFilter && locationFilter.value.trim()) {
-    filters.city = locationFilter.value.trim();
-  }
+  // Build filters object
+  if (sourcePlatform) filters.source_platform = sourcePlatform;
+  if (city) filters.city = city;
+  if (minScore) filters.min_score = minScore;
+  if (dateFrom) filters.date_from = dateFrom;
+  if (dateTo) filters.date_to = dateTo;
   
   return filters;
 }
@@ -1361,135 +1429,6 @@ async function loadDashboardMetrics() {
   }
 }
 
-async function loadLeadsData() {
-  try {
-    console.log('📊 Loading leads data...');
-    const response = await fetch('/api/leads?limit=100');
-    const data = await response.json();
-    
-    if (response.ok) {
-      displayLeadsTable(data.leads || []);
-      updateLeadsPagination(data);
-      console.log(`✅ Loaded ${data.leads?.length || 0} leads`);
-    } else {
-      console.error('Failed to load leads:', data);
-      showNotification('Failed to load leads data', 'error');
-    }
-  } catch (error) {
-    console.error('Failed to load leads data:', error);
-    showNotification('Error loading leads data', 'error');
-  }
-}
-
-function displayLeadsTable(leads) {
-  const leadsTable = document.querySelector('.leads-table');
-  const downloadBtn = document.getElementById('downloadLeadsBtn');
-  
-  if (!leadsTable) return;
-  
-  // Clear existing table content
-  leadsTable.innerHTML = '';
-  
-  // Create table header
-  const thead = document.createElement('thead');
-  thead.innerHTML = `
-    <tr>
-      <th>Source Platform</th>
-      <th>Business</th>
-      <th>Contact</th>
-      <th>Location</th>
-      <th>Score</th>
-      <th>Status</th>
-    </tr>
-  `;
-  leadsTable.appendChild(thead);
-  
-  // Create table body
-  const tableBody = document.createElement('tbody');
-  leadsTable.appendChild(tableBody);
-  
-  if (leads.length === 0) {
-    // Hide download button when no leads
-    if (downloadBtn) {
-      downloadBtn.style.display = 'none';
-    }
-    
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <div>
-              <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
-              <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
-              <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
-            </div>
-          </div>
-        </td>
-      </tr>
-    `;
-    
-    return;
-  }
-  
-  // Show download button when leads exist
-  if (downloadBtn) {
-    downloadBtn.style.display = 'flex';
-  }
-  
-  console.log(`📋 Displaying ${leads.length} leads in table`);
-  
-  leads.forEach(lead => {
-    const row = document.createElement('tr');
-    
-    // Add a subtle animation for new leads
-    const isRecent = new Date(lead.created_at) > new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
-    if (isRecent) {
-      row.style.animation = 'fadeInHighlight 2s ease-out';
-      row.classList.add('new-lead-row');
-    }
-    
-    row.innerHTML = `
-      <td>
-        <div class="source-info">
-          <strong>${lead.source_platform || 'Unknown'}</strong>
-        </div>
-      </td>
-      <td>
-        <div class="business-info">
-          <strong>${lead.business_name}</strong>
-          <small>${lead.industry || 'Unknown Industry'}${isRecent ? ' <span class="new-lead-badge">• NEW</span>' : ''}</small>
-        </div>
-      </td>
-      <td>
-        <div class="contact-info">
-          <strong>${lead.contact_name || 'No contact'}</strong>
-          <small>${lead.email || 'No Email'}</small>
-          <small>${lead.phone || 'No Phone'}</small>
-        </div>
-      </td>
-      <td>
-        <div class="location-info">
-          <strong>${lead.city || 'Unknown'}, ${lead.state || 'Unknown'}</strong>
-          <small>${lead.address || ''}</small>
-        </div>
-      </td>
-      <td>
-        <span class="score ${getScoreClass(lead.score)}">${(lead.score || 0).toFixed(1)}</span>
-      </td>
-      <td>
-        <span class="status ${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span>
-      </td>
-    `;
-    tableBody.appendChild(row);
-  });
-}
-
 function getScoreClass(score) {
   if (score >= 4) return 'high';
   if (score >= 2.5) return 'medium';
@@ -1501,6 +1440,13 @@ function getLeadStatus(lead) {
   if (lead.response_received) return 'responded';
   if (lead.outreach_sent) return 'contacted';
   if (lead.validated) return 'qualified';
+  
+  // Check if the lead is older than 24 hours
+  const createdAt = new Date(lead.created_at);
+  const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
+  if (createdAt < twentyFourHoursAgo) {
+    return ''; // Status goes away after 24 hours if still 'new'
+  }
   return 'new';
 }
 
@@ -1509,6 +1455,13 @@ function getLeadStatusText(lead) {
   if (lead.response_received) return 'Responded';
   if (lead.outreach_sent) return 'Contacted';
   if (lead.validated) return 'Qualified';
+  
+  // Check if the lead is older than 24 hours
+  const createdAt = new Date(lead.created_at);
+  const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
+  if (createdAt < twentyFourHoursAgo) {
+    return ''; // Status goes away after 24 hours if still 'New'
+  }
   return 'New';
 }
 

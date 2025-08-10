@@ -347,6 +347,13 @@ class SupabaseService {
     if (lead.response_received) return 'responded';
     if (lead.outreach_sent) return 'contacted';
     if (lead.validated) return 'qualified';
+
+    // Check if the lead is older than 24 hours
+    const createdAt = new Date(lead.created_at);
+    const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
+    if (createdAt < twentyFourHoursAgo) {
+      return ''; // Status goes away after 24 hours if still 'new'
+    }
     return 'new';
   }
 
@@ -358,6 +365,13 @@ class SupabaseService {
     if (lead.response_received) return 'Responded';
     if (lead.outreach_sent) return 'Contacted';
     if (lead.validated) return 'Qualified';
+
+    // Check if the lead is older than 24 hours
+    const createdAt = new Date(lead.created_at);
+    const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
+    if (createdAt < twentyFourHoursAgo) {
+      return ''; // Status goes away after 24 hours if still 'New'
+    }
     return 'New';
   }
 

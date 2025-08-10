@@ -210,7 +210,7 @@ class SupabaseService {
       if (filters.min_score) {
         console.log('🔍 SUPABASE DEBUG: Applying min_score filter:', filters.min_score);
         query = query.gte('score', filters.min_score);
-      }
+        query = query.gte('average_score', filters.min_score);
 
       // Date range filtering
       if (filters.date_from) {
@@ -229,9 +229,9 @@ class SupabaseService {
       // Apply sorting
       const sortField = filters.sort || 'created_at';
       const sortOrder = filters.order === 'asc' ? true : false;
-      
+
       console.log('🔍 SUPABASE DEBUG: Applying sort:', { sortField, sortOrder });
-      query = query.order('created_at', { ascending: sortOrder });
+      query = query.order(sortField, { ascending: sortOrder });
       
       // Apply pagination
       const from = (page - 1) * limit;
@@ -240,8 +240,7 @@ class SupabaseService {
       query = query.range(from, to);
 
       console.log('🚀 SUPABASE DEBUG: About to execute query...');
-      console.log('🚀 SUPABASE DEBUG: About to execute final query...');
-      const { data, error: supabaseError, count } = await query;
+      const { data, error: supabaseError, count } = await query.select(columns, { count: 'exact' });
       console.log('✅ SUPABASE DEBUG: Query executed without throwing!');
 
       if (supabaseError) {

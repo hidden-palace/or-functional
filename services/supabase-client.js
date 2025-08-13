@@ -197,9 +197,24 @@ class SupabaseService {
         query = query.eq('source_platform', filters.source_platform);
       }
 
+      if (filters.industry && filters.industry !== 'All Industries') {
+        console.log('🔍 SUPABASE DEBUG: Applying industry filter:', filters.industry);
+        query = query.eq('industry', filters.industry);
+      }
+
       if (filters.city) {
         console.log('🔍 SUPABASE DEBUG: Applying city filter:', filters.city);
         query = query.ilike('city', `%${filters.city}%`);
+      }
+
+      if (filters.validated !== undefined) {
+        console.log('🔍 SUPABASE DEBUG: Applying validated filter:', filters.validated);
+        query = query.eq('validated', filters.validated);
+      }
+
+      if (filters.outreach_sent !== undefined) {
+        console.log('🔍 SUPABASE DEBUG: Applying outreach_sent filter:', filters.outreach_sent);
+        query = query.eq('outreach_sent', filters.outreach_sent);
       }
 
       if (filters.employee_id) {
@@ -209,8 +224,7 @@ class SupabaseService {
 
       if (filters.min_score) {
         console.log('🔍 SUPABASE DEBUG: Applying min_score filter:', filters.min_score);
-        query = query.gte('score', filters.min_score);
-        query = query.gte('average_score', filters.min_score);
+        query = query.gte('relevance_score', filters.min_score);
       }
 
       // Date range filtering
@@ -230,9 +244,9 @@ class SupabaseService {
       // Apply sorting
       const sortField = filters.sort || 'created_at';
       const sortOrder = filters.order === 'asc' ? true : false;
-
+      
       console.log('🔍 SUPABASE DEBUG: Applying sort:', { sortField, sortOrder });
-      query = query.order(sortField, { ascending: sortOrder });
+      query = query.order('created_at', { ascending: sortOrder });
       
       // Apply pagination
       const from = (page - 1) * limit;
@@ -241,7 +255,8 @@ class SupabaseService {
       query = query.range(from, to);
 
       console.log('🚀 SUPABASE DEBUG: About to execute query...');
-      const { data, error: supabaseError, count } = await query.select(columns, { count: 'exact' });
+      console.log('🚀 SUPABASE DEBUG: About to execute final query...');
+      const { data, error: supabaseError, count } = await query;
       console.log('✅ SUPABASE DEBUG: Query executed without throwing!');
 
       if (supabaseError) {
@@ -347,13 +362,6 @@ class SupabaseService {
     if (lead.response_received) return 'responded';
     if (lead.outreach_sent) return 'contacted';
     if (lead.validated) return 'qualified';
-
-    // Check if the lead is older than 24 hours
-    const createdAt = new Date(lead.created_at);
-    const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
-    if (createdAt < twentyFourHoursAgo) {
-      return ''; // Status goes away after 24 hours if still 'new'
-    }
     return 'new';
   }
 
@@ -365,13 +373,6 @@ class SupabaseService {
     if (lead.response_received) return 'Responded';
     if (lead.outreach_sent) return 'Contacted';
     if (lead.validated) return 'Qualified';
-
-    // Check if the lead is older than 24 hours
-    const createdAt = new Date(lead.created_at);
-    const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
-    if (createdAt < twentyFourHoursAgo) {
-      return ''; // Status goes away after 24 hours if still 'New'
-    }
     return 'New';
   }
 

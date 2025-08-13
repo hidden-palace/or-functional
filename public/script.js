@@ -5,246 +5,84 @@ let isProcessing = false;
 let conversationHistory = {}; // Store conversation history per employee
 let isExportDropdownOpen = false; // Track export dropdown state
 
+// Global state management
+let activeEmployeeId = 'brenden';
+let conversationThreads = {}; // Store separate thread IDs for each employee
+let pendingMessages = {}; // Track pending messages per employee
+
 // Employee configurations
 const employees = {
   brenden: {
+    id: 'brenden',
     name: 'AI Brenden',
     role: 'lead scraper',
     specialty: 'Lead Research Specialist',
-    avatar: 'https://images.pexels.com/photos/2379004/pexels-photo-2379004.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/brenden.jpeg',
     description: 'Expert data researcher specializing in B2B lead generation. I extract high-quality prospects from LinkedIn, Google Maps, and Yellow Pages with precision and attention to detail.',
     quickActions: [
       { icon: '🔍', text: 'Find florists in Los Angeles', action: 'Find florists in Los Angeles area' },
       { icon: '📊', text: 'Research wedding vendors', action: 'Research wedding vendors and event planners' },
       { icon: '🏢', text: 'Corporate clients search', action: 'Find corporate clients who need floral services' },
       { icon: '📋', text: 'Scrape LinkedIn For VAs', action: 'Scrape LinkedIn For Virtual Assistants' }
-    ]
+    ],
+    tags: ['Specialist', 'Marketing']
   },
   van: {
+    id: 'van',
     name: 'AI Van',
     role: 'page operator',
     specialty: 'Digital Marketing Designer',
-    avatar: 'https://images.pexels.com/photos/1222271/pexels-photo-1222271.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
     description: 'Creative digital marketing specialist focused on landing page design and conversion optimization. I create compelling pages that turn visitors into customers.',
     quickActions: [
-      { icon: '🎨', text: 'Create Valentine\'s page', action: 'Create a Valentine\'s Day landing page for flower sales' },
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
       { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
-    ]
+    ],
+    tags: ['Marketing', 'Design']
   },
-  angel: {
-    name: 'AI Angel',
-    role: 'voice caller',
-    specialty: 'Voice Outreach Manager',
-    avatar: 'https://images.pexels.com/photos/1239291/pexels-photo-1239291.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop&crop=face',
-    description: 'Professional voice outreach specialist for customer engagement and lead qualification. I handle phone campaigns with a personal touch.',
+  rey: {
+    id: 'rey',
+    name: 'AI Rey',
+    role: 'Strategic Analyst',
+    specialty: 'Lead Generation Plan Strategist',
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
+    description: 'I develop comprehensive lead generation strategies by analyzing competitor landscapes and market opportunities. I create data-driven plans that optimize conversion rates and identify the most promising prospects.',
     quickActions: [
-      { icon: '📞', text: 'Start call campaign', action: 'Start a voice outreach campaign for new leads' },
-      { icon: '📝', text: 'Prepare call script', action: 'Prepare a call script for florist outreach' },
-      { icon: '📊', text: 'Call performance review', action: 'Review call campaign performance and metrics' },
-      { icon: '🎯', text: 'Qualify leads', action: 'Qualify leads through voice conversations' }
-    ]
-  }
+      { icon: '🧲', text: 'Create Lead Generation Plan to get new Leads', action: 'Create Lead Generation Plan to get new Leads' },
+      { icon: '📝', text: 'Generate a 3-Tier Lead Gen Strategy', action: 'Generate a 3-Tier Lead Gen Strategy' },
+      { icon: '📊', text: 'Break Plan into Time-Phased Actions', action: 'Break Plan into Time-Phased Actions' },
+      { icon: '🎯', text: 'Build KPI Tracking metrics', action: 'Build KPI Tracking metrics' }
+    ],
+    tags: ['Strategy', 'Analytics']
+  },
+  xavier: {
+  id: 'xavier',
+  name: 'AI Xavier',
+  role: 'Content Specialist',
+  specialty: 'Content Generation AI',
+  avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
+  description: 'I create compelling content across all formats – from engaging social media videos and UGC campaigns to persuasive email sequences and landing page copy. I understand audience psychology and craft messages that convert.',
+  quickActions: [
+    { icon: '🎥', text: 'Generate TikTok Video Concept', action: 'Generate TikTok Video Concept' },
+    { icon: '📹', text: 'Create Instagram Reel Script', action: 'Create Instagram Reel Script' },
+    { icon: '📝', text: 'Write UGC Video Caption', action: 'Write UGC Video Caption' },
+    { icon: '💡', text: 'Suggest 5 UGC Ideas', action: 'Suggest 5 UGC Ideas for brand' }
+  ],
+  tags: ['Content', 'Marketing']
+}
+};
+
+// Welcome messages
+const welcomeMessages = {
+  brenden: "👋 Hi! I'm AI Brenden, your Lead Research Specialist. I excel at finding and qualifying high-quality business leads. I can help you discover potential customers, research companies, and build targeted prospect lists. What kind of leads are you looking for today?",
+  van: "👋 Hello! I'm AI Van, your Digital Marketing Designer. I specialize in creating high-converting landing pages and marketing automation workflows. I can help you design compelling pages, set up marketing funnels, and optimize your digital presence. What marketing project can I help you with?",
+  rey: "👋 Hey there! I'm AI Rey, your Lead Generation Plan Strategist. I focus on voice outreach strategies and competitor analysis to help you understand your market better. I can help you develop outreach campaigns, analyze competitors, and create strategic plans. What's your lead generation goal?",
+  xavier: "👋 Hi! I'm AI Xavier, your UGC Expert. I specialize in user-generated content strategies and content creation that resonates with your audience. I can help you develop content plans, create engaging copy, and build authentic brand connections. Ready to create some amazing content?"
 };
 
 // DOM elements
-let chatMessages, messageInput, sendButton, charCount;
-
-// Global clearFilters function for HTML onclick handler
-function clearFilters() {
-    console.log('🧹 Clearing all filters...');
-    
-    // Reset all filter inputs with null checks
-    const sourcePlatformFilter = document.getElementById('source-platform-filter');
-    const cityFilter = document.getElementById('city-filter');
-    const minScoreFilter = document.getElementById('min-score-filter');
-    const dateFromFilter = document.getElementById('date-from-filter');
-    const dateToFilter = document.getElementById('date-to-filter');
-    
-    if (sourcePlatformFilter) sourcePlatformFilter.value = '';
-    if (cityFilter) cityFilter.value = '';
-    if (minScoreFilter) minScoreFilter.value = '';
-    if (dateFromFilter) dateFromFilter.value = '';
-    if (dateToFilter) dateToFilter.value = '';
-    
-    console.log('✅ Filters cleared, reloading leads...');
-    
-    // Use unified leads loading function
-    loadLeadsData();
-}
-
-// Function to apply filters and reload leads
-function applyFilters() {
-    console.log('Applying filters');
-    loadLeadsData(); // Use unified function instead of loadLeads()
-}
-
-// UNIFIED: Single function to load and display leads
-async function loadLeadsData() {
-    try {
-        console.log('🔍 Loading leads with current filters...');
-        
-        // Get filter values with null checks
-        const sourcePlatformElement = document.getElementById('source-platform-filter');
-        const cityElement = document.getElementById('city-filter');
-        const minScoreElement = document.getElementById('min-score-filter');
-        const dateFromElement = document.getElementById('date-from-filter');
-        const dateToElement = document.getElementById('date-to-filter');
-        
-        const sourcePlatform = sourcePlatformElement ? sourcePlatformElement.value : '';
-        const city = cityElement ? cityElement.value : '';
-        const minScore = minScoreElement ? minScoreElement.value : '';
-        const dateFrom = dateFromElement ? dateFromElement.value : '';
-        const dateTo = dateToElement ? dateToElement.value : '';
-        
-        // Build query parameters
-        const params = new URLSearchParams();
-        if (sourcePlatform) params.append('source_platform', sourcePlatform);
-        if (city) params.append('city', city);
-        if (minScore) params.append('min_score', minScore);
-        if (dateFrom) params.append('date_from', dateFrom);
-        if (dateTo) params.append('date_to', dateTo);
-        
-        // Make API request
-        const response = await fetch(`/api/leads?${params.toString()}`);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Loaded leads:', data);
-        
-        // Update the leads table with the filtered data
-        displayLeadsTable(data.leads || []);
-        updateLeadsPagination(data);
-        
-    } catch (error) {
-        console.error('Error loading leads:', error);
-        showNotification('Error loading leads. Please try again.', 'error');
-    }
-}
-
-// UNIFIED: Single function to display leads in table with consistent structure
-function displayLeadsTable(leads) {
-  console.log('📋 Displaying leads in table...');
-  
-  const leadsTable = document.querySelector('.leads-table');
-  const downloadBtn = document.getElementById('downloadLeadsBtn');
-  
-  if (!leadsTable) {
-    console.error('❌ CRITICAL ERROR: Leads table element with class "leads-table" not found');
-    return;
-  }
-  
-  // Clear existing table content
-  leadsTable.innerHTML = '';
-  
-  // Create table header
-  const thead = document.createElement('thead');
-  thead.innerHTML = `
-    <tr>
-      <th>Source Platform</th>
-      <th>Business</th>
-      <th>Contact</th>
-      <th>Location</th>
-      <th>Score</th>
-      <th>Status</th>
-    </tr>
-  `;
-  leadsTable.appendChild(thead);
-  
-  // Create table body with the specific ID that other functions expect
-  const tableBody = document.createElement('tbody');
-  tableBody.id = 'leads-table-body'; // CRITICAL: Add the ID that displayLeads() looks for
-  leadsTable.appendChild(tableBody);
-  
-  if (leads.length === 0) {
-    // Hide download button when no leads
-    if (downloadBtn) {
-      downloadBtn.style.display = 'none';
-    }
-    
-    tableBody.innerHTML = `
-      <tr>
-        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
-          <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
-              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
-              <circle cx="9" cy="7" r="4"></circle>
-              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
-              <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-            </svg>
-            <div>
-              <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found</h4>
-              <p style="margin: 0; font-size: 14px;">Try adjusting your filters or ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads!</p>
-              <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
-            </div>
-          </div>
-        </td>
-      </tr>
-    `;
-    
-    return;
-  }
-  
-  // Show download button when leads exist
-  if (downloadBtn) {
-    downloadBtn.style.display = 'flex';
-  }
-  
-  console.log(`📋 Displaying ${leads.length} leads in table`);
-  
-  leads.forEach(lead => {
-    const row = document.createElement('tr');
-    
-    // Add a subtle animation for new leads
-    const isRecent = new Date(lead.created_at) > new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
-    if (isRecent) {
-      row.style.animation = 'fadeInHighlight 2s ease-out';
-      row.classList.add('new-lead-row');
-    }
-    
-    row.innerHTML = `
-      <td>
-        <div class="source-info">
-          <strong>${lead.source_platform || 'Unknown'}</strong>
-        </div>
-      </td>
-      <td>
-        <div class="business-info">
-          <strong>${lead.business_name}</strong>
-          <small>${lead.industry || 'Unknown Industry'}${isRecent ? ' <span class="new-lead-badge">• NEW</span>' : ''}</small>
-        </div>
-      </td>
-      <td>
-        <div class="contact-info">
-          <strong>${lead.contact_name || 'No contact'}</strong>
-          <small>${lead.email || 'No Email'}</small>
-          <small>${lead.phone || 'No Phone'}</small>
-        </div>
-      </td>
-      <td>
-        <div class="location-info">
-          <strong>${lead.city || 'Unknown'}, ${lead.state || 'Unknown'}</strong>
-          <small>${lead.address || ''}</small>
-        </div>
-      </td>
-      <td>
-        <span class="score ${getScoreClass(lead.score)}">${(lead.score || 0).toFixed(1)}</span>
-      </td>
-      <td>
-        <span class="status ${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span>
-      </td>
-    `;
-    tableBody.appendChild(row);
-  });
-}
-
-// Load leads when page loads
-document.addEventListener('DOMContentLoaded', function() {
-    loadLeadsData(); // Use unified function
-});
+let chatMessages, messageInput, sendButton, charCount, employeeList;
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', function() {
@@ -270,6 +108,7 @@ function initializeElements() {
   messageInput = document.getElementById('messageInput');
   sendButton = document.getElementById('sendButton');
   charCount = document.getElementById('charCount');
+  employeeList = document.querySelector('.team-members');
 }
 
 function initializeNavigation() {
@@ -316,6 +155,148 @@ function initializeEmployeeSelection() {
       member.classList.add('active');
     });
   });
+}
+
+function setupEmployeeProfiles() {
+  console.log('🔧 Setting up employee profiles...');
+  
+  const employees = [
+    { 
+      id: 'brenden', 
+      name: 'AI Brenden', 
+      role: 'Lead Research Specialist', 
+      specialty: 'Lead Generation & Data Research',
+      avatar: '/brenden-avatar.jpg',
+      description: 'Expert at finding and qualifying high-value leads through advanced research techniques.',
+      status: 'online'
+    },
+    { 
+      id: 'Van', 
+      name: 'AI Van', 
+      role: 'Landing Page Generation Expert', 
+      specialty: 'Landing Page Expert',
+      avatar: '/van-avatar.jpg',
+      description: 'Expert at creating comprehensive engaging landing pages that convert.',
+      status: 'online'
+    },
+    {
+      id: 'Xavier',
+      name: 'AI Xavier',
+      role: 'UGC Expert', 
+      avatar: 'https://images.pexels.com/photos/1181686/pexels-photo-1181686.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop'
+    },
+    { 
+      id: 'Rey', 
+      name: 'AI Rey', 
+      role: 'Lead Generation Plan Strategist', 
+      specialty: 'Voice Outreach & Campaign Management',
+      avatar: '/rey-avatar.jpg', 
+      description: 'Specializes in creating effective outreach strategies and managing voice campaigns.',
+      status: 'online'
+    },
+    { 
+      id: 'Xavier', 
+      name: 'AI Xavier', 
+      role: 'Content Generation AI', 
+      specialty: 'Expert UGC video generator',
+      avatar: '/van-avatar.jpg',
+      description: 'Expert at creating high quality AI UGC videos for Reels and Tiktok.',
+      status: 'online'
+    }
+  ];
+
+  // Clear existing employee list and ensure fresh state
+  employeeList.innerHTML = '';
+  
+  console.log('🔧 CRITICAL: Creating employee elements with data attributes');
+
+  employees.forEach((employee, index) => {
+    const employeeEl = document.createElement('div');
+    employeeEl.className = `team-member ${employee.id === activeEmployeeId ? 'active' : ''}`;
+    // CRITICAL: Store employee ID in data attribute for foolproof identification
+    employeeEl.setAttribute('data-employee-id', employee.id);
+    employeeEl.setAttribute('data-employee-name', employee.name);
+    employeeEl.innerHTML = `
+      <div class="member-avatar">
+        <img src="https://images.pexels.com/photos/2182970/pexels-photo-2182970.jpeg?auto=compress&cs=tinysrgb&w=100&h=100&fit=crop" alt="${employee.name}">
+        <div class="status-indicator ${employee.status}"></div>
+      </div>
+      <div class="member-info">
+        <div class="member-name">${employee.name}</div>
+        <div class="member-role">${employee.role}</div>
+        <div class="member-specialty">${employee.specialty}</div>
+      </div>
+    `;
+
+    // CRITICAL: Add click handler using data attribute, not array index
+    employeeEl.addEventListener('click', function() {
+      const clickedEmployeeId = this.getAttribute('data-employee-id');
+      const clickedEmployeeName = this.getAttribute('data-employee-name');
+      
+      console.log('🎯 EMERGENCY FIX: Employee clicked!');
+      console.log('🎯 EMERGENCY FIX: Clicked element data-employee-id:', clickedEmployeeId);
+      console.log('🎯 EMERGENCY FIX: Clicked element data-employee-name:', clickedEmployeeName);
+      console.log('🎯 EMERGENCY FIX: Previous activeEmployeeId:', activeEmployeeId);
+      
+      if (!clickedEmployeeId) {
+        console.error('🚨 CRITICAL ERROR: No employee ID found on clicked element!');
+        return;
+      }
+      
+      // Prevent processing if message is pending
+      if (pendingMessages[clickedEmployeeId]) {
+        console.warn('⚠️ Message pending, ignoring click');
+        return;
+      }
+      
+      // Update active employee with absolute certainty
+      activeEmployeeId = clickedEmployeeId;
+      
+      console.log('🎯 EMERGENCY FIX: NEW activeEmployeeId set to:', activeEmployeeId);
+      
+      // Update visual selection
+      document.querySelectorAll('.team-member').forEach(el => el.classList.remove('active'));
+      this.classList.add('active');
+      
+      // Find employee data
+      const selectedEmployee = employees.find(emp => emp.id === clickedEmployeeId);
+      if (!selectedEmployee) {
+        console.error('🚨 CRITICAL ERROR: Employee not found in array!');
+        return;
+      }
+      
+      console.log('🎯 EMERGENCY FIX: Selected employee object:', selectedEmployee);
+      
+      // Handle employee selection
+      handleEmployeeClick(selectedEmployee);
+    });
+
+    employeeList.appendChild(employeeEl);
+    
+    console.log(`🔧 Employee ${employee.name} (${employee.id}) added to DOM with data attribute`);
+  });
+
+  console.log('✅ Employee profiles setup complete');
+  console.log('✅ CRITICAL: activeEmployeeId is:', activeEmployeeId);
+}
+
+function handleEmployeeClick(employee) {
+  console.log('👤 Employee selected:', employee.name, '(ID:', employee.id, ')');
+  console.log('👤 CRITICAL VERIFICATION: activeEmployeeId is now:', activeEmployeeId);
+  console.log('👤 CRITICAL VERIFICATION: employee.id is:', employee.id);
+  console.log('👤 CRITICAL VERIFICATION: Do they match?', activeEmployeeId === employee.id);
+
+  // Update active employee visual state
+  document.querySelectorAll('.team-member').forEach(el => el.classList.remove('active'));
+  document.querySelector(`[data-employee-id="${employee.id}"]`)?.classList.add('active');
+
+  // Update chat header
+  updateChatHeader(employee);
+
+  // Load conversation for this employee
+  loadConversationForEmployee(employee.id);
+
+  console.log(`✅ Successfully switched to ${employee.name}`);
 }
 
 function initializeChatInterface() {
@@ -512,6 +493,7 @@ async function handleLogoUpload(event) {
 async function loadCurrentBranding() {
   try {
     console.log('🔍 FRONTEND DEBUG: Loading current branding...');
+    console.log('🔍 FRONTEND DEBUG: Loading current branding...');
     
     const response = await fetch('/api/branding');
     const branding = await response.json();
@@ -630,25 +612,34 @@ function initializeExportDropdown() {
 function getLeadsFilters() {
   const filters = {};
   
-  // Get filter values with null checks
-  const sourcePlatformElement = document.getElementById('source-platform-filter');
-  const cityElement = document.getElementById('city-filter');
-  const minScoreElement = document.getElementById('min-score-filter');
-  const dateFromElement = document.getElementById('date-from-filter');
-  const dateToElement = document.getElementById('date-to-filter');
+  // Get status filter and map to backend parameters
+  const statusFilter = document.querySelector('.filter-select[data-filter="status"]');
+  if (statusFilter && statusFilter.value && statusFilter.value !== 'All Leads') {
+    switch (statusFilter.value) {
+      case 'New':
+        filters.validated = false;
+        filters.outreach_sent = false;
+        break;
+      case 'Contacted':
+        filters.outreach_sent = true;
+        break;
+      case 'Qualified':
+        filters.validated = true;
+        break;
+    }
+  }
   
-  const sourcePlatform = sourcePlatformElement ? sourcePlatformElement.value : '';
-  const city = cityElement ? cityElement.value : '';
-  const minScore = minScoreElement ? minScoreElement.value : '';
-  const dateFrom = dateFromElement ? dateFromElement.value : '';
-  const dateTo = dateToElement ? dateToElement.value : '';
+  // Get industry filter
+  const industryFilter = document.querySelector('.filter-select[data-filter="industry"]');
+  if (industryFilter && industryFilter.value && industryFilter.value !== 'All Industries') {
+    filters.industry = industryFilter.value;
+  }
   
-  // Build filters object
-  if (sourcePlatform) filters.source_platform = sourcePlatform;
-  if (city) filters.city = city;
-  if (minScore) filters.min_score = minScore;
-  if (dateFrom) filters.date_from = dateFrom;
-  if (dateTo) filters.date_to = dateTo;
+  // Get location filter
+  const locationFilter = document.querySelector('.filter-input[data-filter="location"]');
+  if (locationFilter && locationFilter.value.trim()) {
+    filters.city = locationFilter.value.trim();
+  }
   
   return filters;
 }
@@ -971,6 +962,13 @@ function startNewChat() {
   }
   
   // Reset thread and UI for current employee
+    const currentConfig = employeeConfig && employeeConfig[currentEmployee];
+    
+    if (!currentConfig || !currentConfig.assistantId) {
+        console.error('Employee configuration not found for:', currentEmployee);
+        displayMessage('System', 'Error: Employee configuration not available. Please refresh the page.', 'error');
+        return;
+    }
   currentThreadId = null;
   clearChatMessages();
   showWelcomeMessage(employees[currentEmployee]);
@@ -1116,12 +1114,15 @@ async function pollForCompletion(threadId, runId, maxAttempts = 60) {
             'success'
           );
           
-          // Auto-refresh leads page if user is currently viewing it
-          const leadsSection = document.getElementById('leads-section');
-          if (leadsSection && leadsSection.classList.contains('active')) {
-            console.log('📊 Auto-refreshing leads page...');
-            await loadLeadsData();
-          }
+        // Auto-refresh leads page if user is currently viewing it
+const leadsSection = document.getElementById('leads-section');
+if (leadsSection && leadsSection.classList.contains('active')) {
+  console.log('📊 Auto-refreshing leads page...');
+  await loadLeadsData({
+    employee: currentEmployee,
+    assistantId: currentConfig.assistantId
+  });
+}
           
           // Update dashboard metrics
           await loadDashboardMetrics();
@@ -1162,26 +1163,95 @@ function addMessage(content, role, isError = false) {
     messageEl.classList.add('error');
   }
   
+  // Create message avatar
+  const avatar = document.createElement('div');
+  avatar.className = 'message-avatar';
+  if (role === 'user') {
+    avatar.textContent = 'U';
+    avatar.title = 'You';
+  } else {
+    const emp = currentEmployee || 'brenden';
+    avatar.textContent = emp.charAt(0).toUpperCase();
+    avatar.title = currentEmployee ? getEmployeeName(emp) : 'AI Assistant';
+  }
+
+  // Create message bubble container
+  const bubble = document.createElement('div');
+  bubble.className = 'message-bubble';
+
+  // Create message header
+  const header = document.createElement('div');
+  header.className = 'message-header';
+
+  const sender = document.createElement('span');
+  sender.className = 'message-sender';
+  sender.textContent = role === 'user' ? 'You' : (currentEmployee ? getEmployeeName(currentEmployee) : 'AI Assistant');
+
+  const timestamp = document.createElement('span');
+  timestamp.className = 'message-time';
+  timestamp.textContent = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+
+  header.appendChild(sender);
+  header.appendChild(timestamp);
+
+  // Create message content with better formatting
   const messageContent = document.createElement('div');
   messageContent.className = 'message-content';
   
-  // Check if content contains HTML (like landing page code)
-  if (content.includes('<html') || content.includes('<!DOCTYPE')) {
-    const htmlPreview = createHtmlPreview(content);
-    messageContent.appendChild(htmlPreview);
+  // Format content with proper HTML rendering for AI responses
+  if (role !== 'user' && typeof content === 'string') {
+    // Convert basic markdown-like formatting to HTML
+    let formattedContent = content
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      .replace(/\*(.*?)\*/g, '<em>$1</em>')
+      .replace(/`(.*?)`/g, '<code>$1</code>')
+      .replace(/\n\n/g, '</p><p>')
+      .replace(/\n/g, '<br>');
+    
+    // Wrap in paragraphs if not already formatted
+    if (!formattedContent.includes('<p>')) {
+      formattedContent = '<p>' + formattedContent + '</p>';
+    }
+    
+    messageContent.innerHTML = formattedContent;
   } else {
     messageContent.textContent = content;
   }
-  
-  const messageTime = document.createElement('div');
-  messageTime.className = 'message-time';
-  messageTime.textContent = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-  
-  messageEl.appendChild(messageContent);
-  messageEl.appendChild(messageTime);
+
+  // Handle special message types
+  if (isError) {
+    const statusDiv = document.createElement('div');
+    statusDiv.className = 'status-message';
+    
+    const icon = document.createElement('div');
+    icon.className = `status-icon error`;
+    icon.textContent = '✕';
+    
+    statusDiv.appendChild(icon);
+    statusDiv.appendChild(document.createTextNode(content));
+    messageContent.innerHTML = '';
+    messageContent.appendChild(statusDiv);
+  }
+
+  bubble.appendChild(header);
+  bubble.appendChild(messageContent);
+
+  messageEl.appendChild(avatar);
+  messageEl.appendChild(bubble);
   
   chatMessages.appendChild(messageEl);
   scrollToBottom();
+}
+
+// Helper function to get employee display name
+function getEmployeeName(employeeId) {
+  const names = {
+    'brenden': 'AI Brenden',
+    'van': 'AI Van', 
+    'Rey': 'AI Rey',
+    'angel': 'AI Angel'
+  };
+  return names[employeeId] || 'AI Assistant';
 }
 
 function createHtmlPreview(htmlContent) {
@@ -1429,6 +1499,181 @@ async function loadDashboardMetrics() {
   }
 }
 
+async function loadLeadsData() {
+  try {
+    console.log('📊 Loading leads data...');
+    const response = await fetch('/api/leads?limit=100');
+    const data = await response.json();
+    
+    if (response.ok) {
+      displayLeadsTable(data.leads || []);
+      updateLeadsPagination(data);
+      console.log(`✅ Loaded ${data.leads?.length || 0} leads`);
+    } else {
+      console.error('Failed to load leads:', data);
+      showNotification('Failed to load leads data', 'error');
+    }
+  } catch (error) {
+    console.error('Failed to load leads data:', error);
+    showNotification('Error loading leads data', 'error');
+  }
+}
+
+function displayLeadsTable(leads) {
+  const leadsTable = document.querySelector('.leads-table');
+  const downloadBtn = document.getElementById('downloadLeadsBtn');
+  
+  if (!leadsTable) return;
+  
+  // Clear existing table content
+  leadsTable.innerHTML = '';
+  
+  // Create table header
+  const thead = document.createElement('thead');
+  thead.innerHTML = `
+    <tr>
+      <th>Source Platform</th>
+      <th>Business</th>
+      <th>Contact</th>
+      <th>Location</th>
+      <th>Score</th>
+      <th>Status</th>
+    </tr>
+  `;
+  leadsTable.appendChild(thead);
+  
+  // Create table body
+  const tableBody = document.createElement('tbody');
+  
+  if (leads.length === 0) {
+    // Hide download button when no leads
+    if (downloadBtn) {
+      downloadBtn.style.display = 'none';
+    }
+    
+    tableBody.innerHTML = `
+      <tr>
+        <td colspan="6" style="text-align: center; padding: 40px; color: #64748b;">
+          <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="opacity: 0.5;">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+              <circle cx="9" cy="7" r="4"></circle>
+              <path d="M22 21v-2a4 4 0 0 0-3-3.87"></path>
+            </svg>
+            <div>
+              <h4 style="margin: 0 0 8px 0; color: #374151;">No leads found yet</h4>
+              <p style="margin: 0; font-size: 14px;">Ask ${employees[currentEmployee]?.name || 'AI Brenden'} to generate some leads for you!</p>
+              <p style="margin: 8px 0 0 0; font-size: 12px; opacity: 0.7;">Try: "Find florists in Los Angeles" or "Research wedding vendors"</p>
+            </div>
+            <div class="team-member" data-employee-id="xavier">
+                <div class="member-avatar">
+                    <img src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face" alt="AI Xavier">
+                    <div class="status-indicator online"></div>
+                </div>
+                <div class="member-info">
+                    <div class="member-name">AI Xavier</div>
+                    <div class="member-role">Content Specialist</div>
+                    <div class="member-tags">
+                        <span class="tag content">Content</span>
+                        <span class="tag marketing">Marketing</span>
+                    </div>
+                </div>
+                <div class="member-stats">
+                    <span class="notification-badge">2</span>
+                </div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    `;
+    
+    // SURGICAL FIX: Ensure Xavier's team member has correct data attribute
+    const xavierMember = document.querySelector('.team-member[data-employee-id="xavier"]');
+    if (!xavierMember) {
+      console.error('🚨 SURGICAL ERROR: Xavier team member not found with data-employee-id="xavier"');
+      // Find Xavier by content and fix the attribute
+      const allMembers = document.querySelectorAll('.team-member');
+      allMembers.forEach(member => {
+        if (member.textContent.includes('AI Xavier')) {
+          console.log('🔧 SURGICAL FIX: Adding data-employee-id to Xavier element');
+          member.setAttribute('data-employee-id', 'xavier');
+        }
+      });
+    }
+    
+    // Add event listeners to team members
+    document.querySelectorAll('.team-member').forEach(member => {
+      member.addEventListener('click', () => {
+        console.log('🔍 SURGICAL DEBUG: Team member clicked:', member);
+        console.log('🔍 SURGICAL DEBUG: data-employee-id:', member.dataset.employeeId);
+        const employeeId = member.dataset.employeeId;
+        console.log('🔍 SURGICAL DEBUG: Extracted employeeId:', employeeId);
+        console.log('🔍 SURGICAL DEBUG: Available employees:', Object.keys(employees));
+        if (employeeId && employees[employeeId]) {
+          selectEmployee(employeeId);
+        }
+      });
+    });
+    
+    leadsTable.appendChild(tableBody);
+    return;
+  }
+  
+  // Show download button when leads exist
+  if (downloadBtn) {
+    downloadBtn.style.display = 'flex';
+  }
+  
+  console.log(`📋 Displaying ${leads.length} leads in table`);
+  
+  leads.forEach(lead => {
+    const row = document.createElement('tr');
+    
+    // Add a subtle animation for new leads
+    const isRecent = new Date(lead.created_at) > new Date(Date.now() - 5 * 60 * 1000); // 5 minutes
+    if (isRecent) {
+      row.style.animation = 'fadeInHighlight 2s ease-out';
+      row.classList.add('new-lead-row');
+    }
+    
+    row.innerHTML = `
+      <td>
+        <div class="source-info">
+          <strong>${lead.source_platform || 'Unknown'}</strong>
+        </div>
+      </td>
+      <td>
+        <div class="business-info">
+          <strong>${lead.business_name}</strong>
+          <small>${lead.industry || 'Unknown Industry'}${isRecent ? ' <span class="new-lead-badge">• NEW</span>' : ''}</small>
+        </div>
+      </td>
+      <td>
+        <div class="contact-info">
+          <strong>${lead.contact_name || 'No contact'}</strong>
+          <small>${lead.email || 'No Email'}</small>
+          <small>${lead.phone || 'No Phone'}</small>
+        </div>
+      </td>
+      <td>
+        <div class="location-info">
+          <strong>${lead.city || 'Unknown'}, ${lead.state || 'Unknown'}</strong>
+          <small>${lead.address || ''}</small>
+        </div>
+      </td>
+      <td>
+        <span class="score ${getScoreClass(lead.score)}">${(lead.score || 0).toFixed(1)}</span>
+      </td>
+      <td>
+        <span class="status ${getLeadStatus(lead)}">${getLeadStatusText(lead)}</span>
+      </td>
+    `;
+    tableBody.appendChild(row);
+  });
+  
+  leadsTable.appendChild(tableBody);
+}
+
 function getScoreClass(score) {
   if (score >= 4) return 'high';
   if (score >= 2.5) return 'medium';
@@ -1440,13 +1685,6 @@ function getLeadStatus(lead) {
   if (lead.response_received) return 'responded';
   if (lead.outreach_sent) return 'contacted';
   if (lead.validated) return 'qualified';
-  
-  // Check if the lead is older than 24 hours
-  const createdAt = new Date(lead.created_at);
-  const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
-  if (createdAt < twentyFourHoursAgo) {
-    return ''; // Status goes away after 24 hours if still 'new'
-  }
   return 'new';
 }
 
@@ -1455,13 +1693,6 @@ function getLeadStatusText(lead) {
   if (lead.response_received) return 'Responded';
   if (lead.outreach_sent) return 'Contacted';
   if (lead.validated) return 'Qualified';
-  
-  // Check if the lead is older than 24 hours
-  const createdAt = new Date(lead.created_at);
-  const twentyFourHoursAgo = new Date(Date.now() - (24 * 60 * 60 * 1000));
-  if (createdAt < twentyFourHoursAgo) {
-    return ''; // Status goes away after 24 hours if still 'New'
-  }
   return 'New';
 }
 
@@ -1514,6 +1745,410 @@ function editLead(leadId) {
   console.log('Edit lead:', leadId);
 }
 
+function renderTeamMembers() {
+  console.log('🔧 SURGICAL: renderTeamMembers called');
+  console.log('🔧 SURGICAL: Available employees:', Object.keys(employees));
+  
+  const teamSection = document.querySelector('.team-members');
+  if (!teamSection) return;
+  
+  // SURGICAL FIX: Build team members dynamically from employees object
+  let teamHTML = '';
+  
+  Object.entries(employees).forEach(([employeeId, employee]) => {
+    const isActive = employeeId === 'brenden' ? 'active' : '';
+    const badgeCount = employeeId === 'brenden' ? '5' : employeeId === 'van' ? '3' : '2';
+    
+    teamHTML += `
+      <div class="team-member ${isActive}" data-employee-id="${employeeId}">
+        <div class="member-avatar">
+          <img src="${employee.avatar}" alt="${employee.name}">
+          <div class="status-indicator online"></div>
+        </div>
+        <div class="member-info">
+          <div class="member-name">${employee.name}</div>
+          <div class="member-role">${employee.role}</div>
+          <div class="member-tags">
+            ${employee.tags.map(tag => `<span class="tag ${tag.toLowerCase()}">${tag}</span>`).join('')}
+          </div>
+        </div>
+        <div class="member-stats">
+          <div class="notification-badge">${badgeCount}</div>
+        </div>
+      </div>
+    `;
+  });
+  
+  teamSection.innerHTML = teamHTML;
+  
+  console.log('🔧 SURGICAL: Team members HTML generated');
+  console.log('🔧 SURGICAL: Found team member elements:', document.querySelectorAll('.team-member').length);
+  
+  // SURGICAL VERIFICATION: Check each team member's data attribute
+  document.querySelectorAll('.team-member').forEach((member, index) => {
+    const employeeId = member.dataset.employeeId;
+    console.log(`🔧 SURGICAL: Team member ${index}: data-employee-id="${employeeId}"`);
+  });
+  
+  // Create chat interfaces for all employees
+  Object.values(employees).forEach(employee => {
+    createChatInterface(employee);
+  });
+
+  // Create chat interface for an employee
+  function createChatInterface(employee) {
+    const chatInterface = document.querySelector('.chat-interface');
+    if (!chatInterface) {
+      console.error('Chat interface container not found');
+      return;
+    }
+
+    // Check if chat container already exists for this employee
+    let chatContainer = document.getElementById(`chat-${employee.id}`);
+    if (chatContainer) {
+      return; // Already exists
+    }
+
+    // Create chat container for this employee
+    chatContainer = document.createElement('div');
+    chatContainer.id = `chat-${employee.id}`;
+    chatContainer.className = 'employee-chat-container';
+    chatContainer.style.display = 'none';
+    
+    chatContainer.innerHTML = `
+      <div class="chat-messages" id="messages-${employee.id}">
+        <div class="welcome-message">
+          <div class="welcome-avatar">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 17L12 22L22 17" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+              <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div class="welcome-content">
+            <h4>Welcome to ${employee.name}</h4>
+            <p>${employee.description}</p>
+          </div>
+        </div>
+      </div>
+      <div class="chat-input-container">
+        <form class="chat-form" id="chat-form-${employee.id}">
+          <div class="input-wrapper">
+            <textarea id="messageInput-${employee.id}" placeholder="Ask ${employee.name} anything..." rows="1"></textarea>
+            <button type="submit" class="send-button" id="send-button-${employee.id}">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M22 2L11 13" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                <path d="M22 2L15 22L11 13L2 9L22 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              </svg>
+            </button>
+          </div>
+          <div class="character-count" id="char-count-${employee.id}">0/4000</div>
+        </form>
+      </div>
+    `;
+
+    // Find the chat-content container and append
+    const chatContent = chatInterface.querySelector('.chat-content');
+    if (chatContent) {
+      chatContent.appendChild(chatContainer);
+    } else {
+      chatInterface.appendChild(chatContainer);
+    }
+
+    // Setup event listeners for this employee's chat
+    setupChatEventListeners(employee);
+  }
+
+  // Setup chat interface for the active employee;
+  function setupChatInterface() {
+    const messageInput = document.getElementById('messageInput');
+    const chatForm = document.getElementById('chatForm');
+    const sendButton = document.getElementById('sendButton');
+
+    if (!messageInput || !chatForm || !sendButton) {
+      console.error('Chat interface elements not found');
+      return;
+    }
+
+    // Character count and validation
+    messageInput.addEventListener('input', () => {
+      const length = messageInput.value.length;
+      const charCount = document.getElementById('charCount');
+      if (charCount) {
+        charCount.textContent = `${length}/4000`;
+        charCount.classList.toggle('warning', length > 3500);
+        charCount.classList.toggle('error', length > 4000);
+      }
+      sendButton.disabled = length === 0 || length > 4000;
+    });
+
+    // Handle send button click;
+    document.getElementById('sendButton').addEventListener('click', (e) => {
+      e.preventDefault();
+      const message = messageInput.value.trim();
+      if (message && currentEmployee) {
+        sendMessage(message);
+        messageInput.value = '';
+        sendButton.disabled = true;
+      }
+    });
+
+    // Handle Enter key
+    messageInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendButton.click();
+      }
+    });
+  }
+
+  // Setup event listeners for a specific employee's chat
+  function setupChatEventListeners(employee) {
+    const form = document.getElementById(`chat-form-${employee.id}`);
+    const input = document.getElementById(`messageInput-${employee.id}`);
+    const charCount = document.getElementById(`char-count-${employee.id}`);
+    const sendButton = document.getElementById(`send-button-${employee.id}`);
+
+    if (!form || !input || !charCount || !sendButton) {
+      console.error(`Failed to find chat elements for ${employee.id}`);
+      return;
+    }
+
+    // Character count
+    input.addEventListener('input', () => {
+      const length = input.value.length;
+      charCount.textContent = `${length}/4000`;
+      charCount.classList.toggle('warning', length > 3500);
+      charCount.classList.toggle('error', length > 4000);
+      sendButton.disabled = length === 0 || length > 4000;
+    });
+
+    // Auto-resize textarea
+    input.addEventListener('input', () => {
+      input.style.height = 'auto';
+      input.style.height = Math.min(input.scrollHeight, 120) + 'px';
+    });
+
+    // Form submission
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const message = input.value.trim();
+      if (!message || currentEmployee?.id !== employee.id) return;
+      
+      await sendMessage(message);
+      input.value = '';
+      input.style.height = 'auto';
+      charCount.textContent = '0/4000';
+      sendButton.disabled = true;
+    });
+
+    // Enter key handling
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        form.dispatchEvent(new Event('submit'));
+      }
+    });
+  }
+}
+
+function attachTeamMemberListeners() {
+  console.log('🔧 SURGICAL: attachTeamMemberListeners called');
+  
+  // Add event listeners to team members
+  document.querySelectorAll('.team-member').forEach(member => {
+    const employeeId = member.dataset.employeeId;
+    console.log(`🔧 SURGICAL: Attaching listener to team member: ${employeeId}`);
+    
+    member.addEventListener('click', () => {
+      console.log('🚨 SURGICAL CLICK: Team member clicked');
+      console.log('🚨 SURGICAL CLICK: data-employee-id:', member.dataset.employeeId);
+      console.log('🚨 SURGICAL CLICK: Available employees:', Object.keys(employees));
+      console.log('🚨 SURGICAL CLICK: Employee exists?', !!employees[employeeId]);
+      
+      if (employeeId && employees[employeeId]) {
+        console.log('🚨 SURGICAL CLICK: Calling selectEmployee with:', employeeId);
+        selectEmployee(employeeId);
+      } else {
+        console.error('🚨 SURGICAL ERROR: Employee not found:', employeeId);
+      }
+    });
+  });
+}
+
+function renderMainContent() {
+  renderTeamMembers();
+  attachTeamMemberListeners();
+}
+
+function selectEmployee(employeeId) {
+  console.log('🎯 SURGICAL SELECT: selectEmployee called with:', employeeId);
+  console.log('🎯 SURGICAL SELECT: Current employee:', currentEmployee);
+  console.log('🎯 SURGICAL SELECT: Employee exists?', !!employees[employeeId]);
+  
+  if (!employees[employeeId]) {
+    console.error('🚨 SURGICAL ERROR: Employee not found in selectEmployee:', employeeId);
+    console.error('🚨 SURGICAL ERROR: Available employees:', Object.keys(employees));
+    return;
+  }
+  
+  const selectedEmployee = employees[employeeId];
+  console.log('🎯 SURGICAL SELECT: Selected employee object:', selectedEmployee);
+
+  // Save current conversation before switching
+  if (currentEmployee && currentConversation) {
+    conversationHistory[currentEmployee] = currentConversation;
+  }
+
+  // Update current employee
+  console.log('🔄 CRITICAL: Setting currentEmployee from', currentEmployee, 'to', employeeId);
+  currentEmployee = employeeId;
+  console.log('🔄 CRITICAL: currentEmployee is now:', currentEmployee);
+
+  // Load or create conversation for new employee
+  loadConversationForEmployee(employeeId);
+
+  // Update active team member visual state
+  document.querySelectorAll('.team-member').forEach(member => {
+    member.classList.remove('active');
+    const memberEmployeeId = member.dataset.employeeId;
+    if (memberEmployeeId === employeeId) {
+      member.classList.add('active');
+      console.log('🎯 VISUAL UPDATE: Set active class for', employeeId);
+    }
+  });
+
+  // Update chat header with employee details
+  updateChatHeader(selectedEmployee);
+  updateQuickActions(selectedEmployee.quickActions || []);
+  updateChatTabs(selectedEmployee);
+  updateChatContent(selectedEmployee);
+
+  console.log('🎯 FINAL CHECK: currentEmployee after selectEmployee:', currentEmployee);
+  console.log('🎯 FINAL CHECK: Selected employee name:', selectedEmployee.name);
+  console.log(`✅ Successfully switched to ${selectedEmployee.name} (${employeeId})`);
+}
+
+function switchToEmployeeChat(employeeId) {
+    console.log(`🔄 Attempting to switch to employee: ${employeeId}`);
+    
+    // Debug: Check if employee exists in our array
+    const employee = Object.values(employees).find(emp => emp.id === employeeId);
+    if (!employee) {
+        console.error(`❌ Employee not found in employees array: ${employeeId}`);
+        console.log('Available employees:', Object.keys(employees));
+        return;
+    }
+    
+    console.log(`✅ Found employee:`, employee);
+    
+    // Validate employee ID
+    const validEmployees = Object.keys(employees);
+    if (!validEmployees.includes(employeeId)) {
+        console.error(`❌ Invalid employee ID: ${employeeId}`);
+        console.log('Valid employees:', validEmployees);
+        return;
+    }
+}
+
+async function sendMessage(message) {
+  console.log('📤 Sending message...');
+  console.log('📤 CRITICAL: About to send message with activeEmployeeId:', activeEmployeeId);
+  console.log('📤 CRITICAL: Message content:', message);
+  console.log('📤 CRITICAL: Thread ID for this employee:', conversationThreads[activeEmployeeId]);
+  
+  if (pendingMessages[activeEmployeeId]) {
+    console.warn('⚠️ Message already pending for', activeEmployeeId, ', skipping');
+    return;
+  }
+  
+  const currentEmployeeId = activeEmployeeId; // Store at start to avoid race conditions
+  pendingMessages[currentEmployeeId] = true;
+
+  if (!message.trim()) {
+    pendingMessages[currentEmployeeId] = false;
+    return;
+  }
+
+  // Clear input and disable send button
+  const messageInput = document.getElementById('messageInput');
+  updateSendButton();
+  if (messageInput) messageInput.value = '';
+  if (sendButton) sendButton.disabled = true;
+
+  try {
+    // Add user message to chat immediately
+    appendMessage(message, 'user', 'You');
+
+    console.log('🚀 CRITICAL: Making API request with employee:', activeEmployeeId);
+    
+    // Prepare message data with current employee context
+    const messageData = {
+      message: message,
+      employee: currentEmployeeId,
+      thread_id: conversationThreads[currentEmployeeId] || null
+    };
+    
+    console.log('🚀 CRITICAL: Full API payload:', messageData);
+
+    // Send to backend
+    const response = await fetch('/api/ask', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(messageData)
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    console.log('📥 CRITICAL: API response received:', {
+      status: data.status,
+      employeeId: data.employee?.name || 'UNKNOWN',
+      messagePreview: data.message?.substring(0, 100) + '...'
+    });
+    
+    // Hide typing indicator as soon as we get a response
+    hideTypingIndicator();
+
+    // Store the thread ID for this employee
+    if (data.thread_id) {
+      conversationThreads[activeEmployeeId] = data.thread_id;
+      console.log(`💾 Stored thread ID for ${activeEmployeeId}:`, data.thread_id);
+    }
+    if (data.thread_id && currentEmployeeId === activeEmployeeId) {
+      conversationThreads[currentEmployeeId] = data.thread_id;
+      console.log(`🧵 Thread ID stored for ${currentEmployeeId}:`, data.thread_id);
+    }
+    const employeeName = data.employee?.name || `AI ${currentEmployeeId}`;
+    
+    console.log('💬 CRITICAL: Adding response from:', employeeName);
+    console.log('💬 CRITICAL: Expected employee was:', `AI ${currentEmployeeId}`);
+    
+    appendMessage(data.message, 'assistant', employeeName);
+
+    if (data.status === 'requires_action') {
+      console.log('⚠️ Assistant requires additional actions');
+    }
+
+  } catch (error) {
+    console.error('❌ Error sending message:', error);
+    hideTypingIndicator();
+    
+    // Always hide typing indicator on error
+    hideTypingIndicator();
+    
+    appendMessage(`Sorry, there was an error: ${error.message}`, 'assistant', 'System');
+  } finally {
+    pendingMessages[currentEmployeeId] = false;
+    updateSendButton();
+  }
+}
+
 // Load saved color scheme on page load
 document.addEventListener('DOMContentLoaded', function() {
   const savedColors = localStorage.getItem('orchid-colors');
@@ -1543,3 +2178,54 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 });
+
+function updateSendButton() {
+  const isPending = pendingMessages[activeEmployeeId];
+  sendButton.disabled = isPending;
+  sendButton.textContent = isPending ? 'Sending...' : 'Send';
+  
+  // Update placeholder to show current employee
+  const currentEmployee = getCurrentEmployeeName();
+  messageInput.placeholder = isPending ? 
+    `Waiting for ${currentEmployee}...` : 
+    `Message ${currentEmployee}...`;
+}
+
+function getCurrentEmployeeName() {
+  const names = {
+    'brenden': 'AI Brenden',
+    'Rey': 'AI Rey',
+    'van': 'AI Van'
+  };
+  return names[activeEmployeeId] || `AI ${activeEmployeeId}`;
+}
+
+function updateEmployeeHeader(employeeId) {
+  const employeeNames = {
+    'brenden': 'AI Brenden',
+    'Rey': 'AI Rey',
+    'Xavier': 'AI Xavier'
+  };
+  
+  const employeeRoles = {
+    'brenden': 'Lead Research Specialist',
+    'Rey': 'Voice Outreach Manager',
+    'Xavier': 'UGC Expert'
+  };
+  
+  const employeeAvatars = {
+    'brenden': 'https://images.pexels.com/photos/3785077/pexels-photo-3785077.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    'Rey': 'https://images.pexels.com/photos/3785079/pexels-photo-3785079.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1',
+    'Xavier': 'https://images.pexels.com/photos/3760067/pexels-photo-3760067.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1'
+  };
+  
+  const nameElement = document.querySelector('.employee-details h3');
+  const roleElement = document.querySelector('.role-tag');
+  const avatarElement = document.querySelector('.employee-avatar img');
+  
+  if (nameElement) nameElement.textContent = employeeNames[employeeId] || 'Unknown Employee';
+  if (roleElement) roleElement.textContent = employeeRoles[employeeId] || 'Unknown Role';
+  if (avatarElement) avatarElement.src = employeeAvatars[employeeId] || '';
+  
+  console.log('Employee header updated for:', employeeId);
+}

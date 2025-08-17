@@ -5,26 +5,23 @@
 }
 
 :root {
-    --primary-color: #D97D9D; /* Soft pinkish tone for flower accents */
-    --secondary-color: #DA70D6; /* Accent titles / highlight tags (light purple) */
-    --accent-color: #F4D7DA; /* Background walls / light overlays (light pink) */
-    --success-color: #10b981; /* Success green */
-    --warning-color: #f59e0b; /* Yellow for warnings */
-    --error-color: #ef4444; /* Red for errors */
-    --background-color: #ffffff; /* Core backgrounds */
-    --surface-color: #ffffff; /* Core backgrounds */
-    --text-primary: #333333; /* Body text (dark for readability) */
-    --text-secondary: #6B4F4F; /* Subtle muted brown for secondary text */
-    --border-color: #e2e8f0; /* Light gray for borders */
+ --primary-color: #006c6e;       /* Deep teal/cyan (dominant color) */
+  --secondary-color: #64748b;     /* Muted slate (unchanged) */
+  --accent-color: #c7531f;        /* Bold burnt orange (highlight/accent) */
+  --success-color: #10b981;       /* Success green */
+  --warning-color: #f59e0b;       /* Warning amber */
+  --error-color: #ef4444;         /* Error red */
+  --background-color: #f8fafc;    /* Light grey-white */
+  --surface-color: #ffffff;       /* Clean white surfaces */
+  --text-primary: #1e293b;        /* Dark slate for base text */
+  --text-secondary: #64748b;      /* Muted blue-grey for secondary text */
+  --border-color: #e2e8f0;        /* Light border grey */
 }
-
-
-  .header-actions {
+.header-actions {
     display: flex;
     gap: 12px;
     align-items: center;
-    flex-shrink: 0;
-}
+    flex-shrink: 0; }
 
 /* App Container - Main Layout */
 .app-container {
@@ -74,7 +71,7 @@
   width: 48px;
   height: 48px;
   max-width: 500px;
-  max-height: 500px;
+  max-height: 350px;
   object-fit: contain;
   border-radius: 8px;
   background: rgba(255, 255, 255, 0.1);
@@ -224,7 +221,7 @@
 }
 
 .btn.primary:hover {
-    background: #ff4f8c;
+    background: #2563eb;
     transform: translateY(-1px);
 }
 
@@ -383,18 +380,15 @@
     padding: 24px 40px;
     background: var(--surface-color);
     border-bottom: 1px solid var(--border-color);
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    display: flex;
     gap: 20px;
     align-items: end;
-    max-width: 100%;
 }
 
 .filter-group {
     display: flex;
     flex-direction: column;
     gap: 6px;
-    min-width: 0;
 }
 
 .filter-group label {
@@ -403,7 +397,6 @@
     color: var(--text-secondary);
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    margin-bottom: 4px;
 }
 
 .filter-select,
@@ -414,81 +407,6 @@
     font-size: 14px;
     background: var(--surface-color);
     color: var(--text-primary);
-    transition: border-color 0.2s ease;
-    min-width: 0;
-}
-
-.filter-select:focus,
-.filter-input:focus {
-    outline: none;
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(217, 125, 157, 0.1);
-}
-
-.filter-input::placeholder {
-    color: #94a3b8;
-    font-style: italic;
-}
-
-.filter-actions {
-    display: flex;
-    gap: 12px;
-    grid-column: 1 / -1;
-    justify-content: flex-end;
-    margin-top: 8px;
-}
-
-.filter-btn {
-    padding: 10px 20px;
-    border-radius: 8px;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    border: none;
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.filter-btn.primary {
-    background: var(--primary-color);
-    color: white;
-}
-
-.filter-btn.primary:hover {
-    background: #c1658a;
-    transform: translateY(-1px);
-}
-
-.filter-btn.secondary {
-    background: var(--surface-color);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-}
-
-.filter-btn.secondary:hover {
-    background: #f8fafc;
-    border-color: #cbd5e1;
-}
-
-.date-range-group {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    grid-column: span 2;
-}
-
-.date-range-inputs {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-}
-
-.date-separator {
-    color: var(--text-secondary);
-    font-weight: 500;
-    padding: 0 4px;
 }
 
 .leads-table-container {

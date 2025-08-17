@@ -37,7 +37,8 @@ const employees = {
     quickActions: [
       { icon: '💼', text: 'Corporate services page', action: 'Design a landing page for corporate floral services' },
       { icon: '💒', text: 'Wedding packages page', action: 'Create a wedding floral packages landing page' },
-      { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' }
+      { icon: '📱', text: 'Mobile-first design', action: 'Design a mobile-optimized flower delivery page' },
+      { icon: '🔄', text: 'A/B test variations', action: 'Create design variations for A/B testing' }
     ],
     tags: ['Marketing', 'Design']
   },
@@ -51,7 +52,8 @@ const employees = {
     quickActions: [
       { icon: '✍️', text: 'Flower care guides', action: 'Write detailed blog posts on caring for orchids and luxury blooms' },
       { icon: '🌸', text: 'Floral trends insights', action: 'Create engaging articles on seasonal and design trends in floral arrangements' },
-      { icon: '📈', text: 'SEO-driven content', action: 'Develop SEO-optimized blog posts to boost brand visibility and drive traffic' }
+      { icon: '📈', text: 'SEO-driven content', action: 'Develop SEO-optimized blog posts to boost brand visibility and drive traffic' },
+      { icon: '📅', text: 'Content calendar', action: 'Generate a monthly blog content calendar' }
     ],
     tags: ['Blog Posts', 'Content Generation']
   },
@@ -85,17 +87,18 @@ const employees = {
     ],
     tags: ['Content', 'Marketing']
   },
-  // --- New Employees ---
   rhea: {
     id: 'rhea',
     name: 'AI Rhea',
     role: 'Reputation AI',
     specialty: 'Review Assistant',
-    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/brenden.jpeg',
     description: 'I help manage and improve brand reputation by monitoring and responding to customer reviews. I ensure businesses maintain a positive online presence.',
     quickActions: [
       { icon: '⭐', text: 'Analyze reviews', action: 'Analyze recent customer reviews' },
-      { icon: '💬', text: 'Draft response', action: 'Draft a professional response to a negative review' }
+      { icon: '💬', text: 'Draft response', action: 'Draft a professional response to a negative review' },
+      { icon: '📊', text: 'Generate review report', action: 'Create monthly review performance report' },
+      { icon: '👍', text: 'Positive review template', action: 'Create template responses for positive reviews' }
     ],
     tags: ['Reputation', 'Support']
   },
@@ -104,11 +107,13 @@ const employees = {
     name: 'AI Miles',
     role: 'Campaign AI Builder',
     specialty: 'Marketing Campaign Designer',
-    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1754352839350.jpeg',
     description: 'I design end-to-end marketing campaigns powered by data and automation. I ensure creative messaging aligns with audience insights for maximum ROI.',
     quickActions: [
       { icon: '📢', text: 'Create ad campaign', action: 'Draft a new Facebook Ads campaign' },
-      { icon: '📈', text: 'Campaign performance plan', action: 'Generate a campaign optimization plan' }
+      { icon: '📈', text: 'Campaign performance plan', action: 'Generate a campaign optimization plan' },
+      { icon: '🎯', text: 'Audience targeting', action: 'Suggest audience targeting parameters' },
+      { icon: '🔄', text: 'A/B test variations', action: 'Create A/B test variations for campaign elements' }
     ],
     tags: ['Campaigns', 'Marketing']
   },
@@ -117,11 +122,13 @@ const employees = {
     name: 'AI Eden',
     role: 'Email Occasion Reminder AI',
     specialty: 'Customer Engagement Emails',
-    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/angel.jpeg',
     description: 'I create personalized reminder emails for special occasions like birthdays, anniversaries, and seasonal events to boost customer engagement and loyalty.',
     quickActions: [
       { icon: '📧', text: 'Birthday email', action: 'Draft a birthday occasion email for a customer' },
-      { icon: '🎉', text: 'Anniversary email', action: 'Draft an anniversary campaign email' }
+      { icon: '🎉', text: 'Anniversary email', action: 'Draft an anniversary campaign email' },
+      { icon: '🎄', text: 'Holiday sequence', action: 'Create a holiday email sequence' },
+      { icon: '🔄', text: 'Re-engagement series', action: 'Design a customer re-engagement email series' }
     ],
     tags: ['Email', 'Engagement']
   },
@@ -130,11 +137,13 @@ const employees = {
     name: 'AI Angel',
     role: 'Customer Support AI',
     specialty: 'Handles Customer Queries & Phone Inquiries',
-    avatar: 'https://via.placeholder.com/100', // replace with real logo
+    avatar: 'https://cszzuotarqnwdiwrbaxu.supabase.co/storage/v1/object/public/logos/logo_1753134605371.png',
     description: 'I provide responsive customer support, answering queries across multiple channels and escalating issues to human teams when needed.',
     quickActions: [
       { icon: '📞', text: 'Answer inquiry', action: 'Respond to a customer inquiry' },
-      { icon: '📂', text: 'Open support ticket', action: 'Log a customer issue in the support system' }
+      { icon: '📂', text: 'Open support ticket', action: 'Log a customer issue in the support system' },
+      { icon: '❓', text: 'FAQ suggestions', action: 'Suggest FAQ entries based on recent queries' },
+      { icon: '🔄', text: 'Follow-up reminder', action: 'Set up automated follow-up reminders' }
     ],
     tags: ['Support', 'Service']
   }

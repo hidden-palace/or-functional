@@ -376,23 +376,6 @@ router.post('/ask', validateAskRequest, async (req, res, next) => {
     } else if (result.status === 'requires_action') {
       console.log(`🔧 ${employeeConfig.name} requires tool calls:`, result.toolCalls?.length || 0);
       
-      // Validate employee-specific webhook configuration
-      if (!employeeConfig.webhookUrl || employeeConfig.webhookUrl.includes('placeholder')) {
-        console.error(`❌ Webhook URL not configured for ${employeeConfig.name}`);
-        return res.status(503).json({
-          error: 'Webhook not configured',
-          details: `External webhook URL is not configured for ${employeeConfig.name}. Tool calls cannot be processed.`,
-          employee: employeeConfig,
-          tool_calls: result.toolCalls.map(tc => ({
-            id: tc.id,
-            function: tc.function.name,
-            arguments: JSON.parse(tc.function.arguments)
-          })),
-          thread_id: threadId,
-          run_id: runId
-        });
-      }
-      
       // CRITICAL: Send to CORRECT employee's webhook with bulletproof isolation
       console.log(`=== SENDING TOOL CALLS TO ${employeeConfig.name.toUpperCase()}'S WEBHOOK ===`);
       console.log(`🎯 BULLETPROOF WEBHOOK ROUTING:`);
